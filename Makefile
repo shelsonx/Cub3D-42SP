@@ -3,10 +3,14 @@
 # ==============================================================================
 
 MANDATORY		:= ./mandatory
-BONUS			:= ./bonus
 
-LIBFT_PATH		:= ./libft
+LIBFT_PATH		:= ./libs/libft
 LIBFT_FULL_PATH = $(LIBFT_PATH)/libft.a
+
+MINILIBX_DIR		= ./libs/minilibx
+MINILIBX			= ./libs/minilibx/libmlx.a
+MINILIBX_FLAGS		= -L. -lXext -L. -lX11
+
 
 GAME_INIT				:= $(MANDATORY)/game_init
 ERROR_HANDLER			:= $(MANDATORY)/error_handler
@@ -19,28 +23,16 @@ WALLS					:= $(MANDATORY)/walls
 GAME					:= $(MANDATORY)/game
 DEBUG					:= $(MANDATORY)/debug
 
-GAME_INIT_BONUS			:= $(BONUS)/game_init
-ERROR_HANDLER_BONUS		:= $(BONUS)/error_handler
-GAME_EVENTS_BONUS		:= $(BONUS)/game_events
-GAME_EXIT_BONUS			:= $(BONUS)/game_exit
-MAP_VALIDATION_BONUS	:= $(BONUS)/map_validation
-PLAYER_BONUS			:= $(BONUS)/player
-RAYCASTING_BONUS		:= $(BONUS)/raycasting
-WALLS_BONUS				:= $(BONUS)/walls
-GAME_BONUS				:= $(BONUS)/game
-DEBUG_BONUS				:= $(BONUS)/debug
 # ==============================================================================
 # VARIABLES
 # ==============================================================================
 NAME			:=	cub3D
-NAME_BONUS		:=	cub3D_bonus
 CC				:=	cc
-CFLAGS			:=	-g3 -Wall -Werror -Wextra -no-pie
+CFLAGS			:=	-g3 -Wall -Werror -Wextra
 MAKE			:=	make
 
 INCLUDES_USR	:= -I./usr/include
 INCLUDES		:= -I$(LIBFT_PATH)/includes -I$(MANDATORY)/includes
-INCLUDES_BONUS	:= -I$(LIBFT_PATH)/includes -I$(BONUS)/includes
 
 LIBRARY_MLX_PATH = -L/usr/lib -lmlx -lXext -lX11 -lm -lz
 
@@ -66,31 +58,9 @@ SRCS	:=		$(MANDATORY)/cub3D.c \
 				$(WALLS)/walls.c $(WALLS)/wall_utils.c $(WALLS)/calc_dist_wall.c \
 				$(DEBUG)/debug.c
 
-SRCS_BONUS	:=	$(BONUS)/cub3D_bonus.c \
-				$(GAME_BONUS)/game_bonus.c $(GAME_BONUS)/minimap_bonus.c \
-				$(GAME_INIT_BONUS)/game_init_bonus.c $(GAME_INIT_BONUS)/game_init_utils_bonus.c \
-				$(GAME_INIT_BONUS)/images_init_bonus.c \
-				$(ERROR_HANDLER_BONUS)/error_handler_bonus.c \
-				$(GAME_EVENTS_BONUS)/game_events_bonus.c \
-				$(GAME_EXIT_BONUS)/game_exit_bonus.c $(GAME_EXIT_BONUS)/game_exit_utils_bonus.c \
-				$(MAP_VALIDATION_BONUS)/map_validation_bonus.c $(MAP_VALIDATION_BONUS)/file_helpers_bonus.c \
-				$(MAP_VALIDATION_BONUS)/map_validation_utils_bonus.c $(MAP_VALIDATION_BONUS)/map_validation_utils_II_bonus.c \
-				$(MAP_VALIDATION_BONUS)/map_properties_utils_bonus.c $(MAP_VALIDATION_BONUS)/map_content_utils_bonus.c \
-				$(MAP_VALIDATION_BONUS)/map_content_utils_II_bonus.c $(MAP_VALIDATION_BONUS)/map_properties_utils_II_bonus.c \
-				$(MAP_VALIDATION_BONUS)/map_loaders_bonus.c \
-				$(PLAYER_BONUS)/map_utils_bonus.c $(PLAYER_BONUS)/rectangle_bonus.c $(PLAYER_BONUS)/player_bonus.c \
-				$(PLAYER_BONUS)/line_bonus.c $(PLAYER_BONUS)/render_player_bonus.c $(PLAYER_BONUS)/player_utils_bonus.c\
-				$(PLAYER_BONUS)/graphics_bonus.c $(PLAYER_BONUS)/images_utils_bonus.c \
-				$(RAYCASTING_BONUS)/calculate_rays_bonus.c $(RAYCASTING_BONUS)/ray_facing_bonus.c \
-				$(RAYCASTING_BONUS)/calculate_vertical_coordinates_bonus.c  $(RAYCASTING_BONUS)/calculate_horizontal_coordinates_bonus.c \
-				$(RAYCASTING_BONUS)/calculate_steps_bonus.c $(RAYCASTING_BONUS)/ray_utils_bonus.c $(RAYCASTING_BONUS)/render_rays_bonus.c \
-				$(RAYCASTING_BONUS)/vertical_utils_bonus.c $(RAYCASTING_BONUS)/horizontal_utils_bonus.c  $(RAYCASTING_BONUS)/cast_rays_bonus.c\
-				$(WALLS_BONUS)/walls_bonus.c $(WALLS_BONUS)/wall_utils_bonus.c $(WALLS_BONUS)/calc_dist_wall_bonus.c \
-				$(DEBUG_BONUS)/debug_bonus.c
 
 OBJS		:=	$(SRCS:.c=.o)
 
-OBJS_BONUS	:=	$(SRCS_BONUS:.c=.o)
 
 # ==============================================================================
 # COLORS
@@ -115,42 +85,34 @@ export COMPILE_DONE
 
 all:		$(NAME)
 
-bonus:		$(NAME_BONUS)
 
 %.o:		%.c
 			@$(CC) $(CFLAGS) $(INCLUDES_USR) $(INCLUDES) -c $< -o $@
 
-%_bonus.o:		%_bonus.c
-			@$(CC) $(CFLAGS) $(INCLUDES_USR) $(INCLUDES_BONUS) -c $< -o $@
 
-$(NAME):		$(LIBFT_FULL_PATH) $(OBJS)
+$(NAME):		$(LIBFT_FULL_PATH) $(MINILIBX) $(OBJS)
 				@echo "$(WHT)Compiling Cub3D...$(EOC)"
-				@$(CC) $(CFLAGS) $(OBJS) $(LIBRARY_MLX_PATH) $(LIBFT_FULL_PATH) -o $(NAME)
-				@echo "$(GREEN)Cub3D build completed.$(EOC)"
-				@tput setaf 5
-				@echo "$$COMPILE_DONE"
-
-$(NAME_BONUS):	$(LIBFT_FULL_PATH) $(OBJS_BONUS)
-				@echo "$(WHT)Compiling Cub3D bonus...$(EOC)"
-				@$(CC) $(CFLAGS) $(OBJS_BONUS) $(LIBRARY_MLX_PATH) $(LIBFT_FULL_PATH) -o $(NAME_BONUS)
-				@\cp $(NAME_BONUS) $(NAME)
+				@$(CC) $(CFLAGS) $(OBJS) $(LIBFT_FULL_PATH) $(MINILIBX) $(MINILIBX_FLAGS) -o $(NAME)
 				@echo "$(GREEN)Cub3D build completed.$(EOC)"
 				@tput setaf 5
 				@echo "$$COMPILE_DONE"
 
 $(LIBFT_FULL_PATH):
-			@$(MAKE) -C libft
+			@$(MAKE) -C $(LIBFT_PATH)
+
+
+$(MINILIBX):		
+			$(MAKE) -C $(MINILIBX_DIR)
 
 clean:
 			@echo "$(WHT)Removing .o files...$(EOC)"
-			@rm -f $(OBJS) $(OBJS_BONUS) $(MLX_LINUX_LIB)
-			@$(MAKE) -C libft clean
+			$(MAKE) clean -C $(LIBFT_PATH)
+			$(MAKE) clean -C $(MINILIBX_DIR)
 			@echo "$(GREEN)Clean done.$(EOC)"
 
 fclean:		clean
 			@echo "$(WHT)Removing object- and binary -files...$(EOC)"
-			@rm -f $(NAME) $(NAME_BONUS)
-			@$(MAKE) -C libft fclean
+			$(MAKE) fclean -C $(LIBFT_PATH)
 			@echo "$(GREEN)Fclean done.$(EOC)"
 
 re:			fclean all
